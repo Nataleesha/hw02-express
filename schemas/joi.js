@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const contactsScheme = Joi.object({
+const contactsJoiScheme = Joi.object({
   name: Joi.string().required().messages({
     "string.base": `"name" should be a type of 'text'`,
     "string.empty": `"name" cannot be an empty field`,
@@ -25,6 +25,14 @@ const contactsScheme = Joi.object({
       "string.empty": `"phone" cannot be an empty field`,
       "any.required": `"phone" is a required field`,
     }),
+  favorite: Joi.boolean(),
 });
 
-module.exports = contactsScheme;
+const contactUpdateFavoriteJoiSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+module.exports = {
+  contactsJoiScheme,
+  contactUpdateFavoriteJoiSchema,
+};

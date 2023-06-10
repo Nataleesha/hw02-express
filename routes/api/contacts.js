@@ -1,7 +1,11 @@
 const express = require("express");
 
 const contactsControl = require("../../controllers/controllers");
-const contactsScheme = require("../../schemas/joi");
+
+const {
+  contactsJoiScheme,
+  contactUpdateFavoriteJoiSchema,
+} = require("../../schemas/joi");
 
 const router = express.Router();
 
@@ -31,7 +35,7 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = contactsScheme.validate(req.body);
+    const { error } = contactsJoiScheme.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
@@ -57,7 +61,7 @@ router.delete("/:id", async (req, res, next) => {
 
 router.put("/:id", async (req, res, next) => {
   try {
-    const { error } = contactsScheme.validate(req.body);
+    const { error } = contactsJoiScheme.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
@@ -66,7 +70,23 @@ router.put("/:id", async (req, res, next) => {
     if (!result) {
       throw HttpError(404, `Contact with id ${id} was not found.`);
     }
-    console.log(result);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:id/favorite", async (req, res, next) => {
+  try {
+    const { error } = contactUpdateFavoriteJoiSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, "Missing field favorite");
+    }
+    const { id } = req.params;
+    const result = await contactsControl.updateStatusContact(id, req.body);
+    if (!result) {
+      throw HttpError(404, `Contact with id ${id} was not found.`);
+    }
     res.json(result);
   } catch (error) {
     next(error);
