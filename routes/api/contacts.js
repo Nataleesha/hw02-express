@@ -1,15 +1,13 @@
 const express = require("express");
 
 const contactsControl = require("../../controllers/contacts/index");
-
 const {
   contactsJoiScheme,
   contactUpdateFavoriteJoiSchema,
-} = require("../../schemas/joi");
+} = require("../../schemas/joi-contacts");
+const { HttpError } = require("../../helpers");
 
 const router = express.Router();
-
-const { HttpError } = require("../../helpers");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -21,7 +19,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/:id", async (req, res, next) => {
-  console.log(1111);
   try {
     const { id } = req.params;
     const result = await contactsControl.getContactById(id);
