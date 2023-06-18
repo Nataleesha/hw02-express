@@ -6,12 +6,15 @@ const {
   contactUpdateFavoriteJoiSchema,
 } = require("../../schemas/joi-contacts");
 const { HttpError } = require("../../helpers");
+const { authenticate } = require("../../middlewares");
 
 const router = express.Router();
 
+router.use(authenticate);
+
 router.get("/", async (req, res, next) => {
   try {
-    const result = await contactsControl.getAllContacts();
+    const result = await contactsControl.getAllContacts(req);
     res.json(result);
   } catch (error) {
     next(error);
@@ -37,7 +40,7 @@ router.post("/", async (req, res, next) => {
     if (error) {
       throw HttpError(400, error.message);
     }
-    const result = await contactsControl.addContact(req.body);
+    const result = await contactsControl.addContact(req.user, req.body);
     res.status(201).json(result);
   } catch (error) {
     next(error);

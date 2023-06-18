@@ -1,5 +1,5 @@
-const handleMongooseError = require("./handleMongooseError");
+const authenticate = require("./authentication");
 
 module.exports = {
-  handleMongooseError,
+  authenticate,
 };
