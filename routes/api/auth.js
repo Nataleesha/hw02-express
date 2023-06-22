@@ -1,13 +1,17 @@
+const fs = require("fs/promises");
+const path = require("path");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcryptjs = require("bcryptjs");
 const User = require("../../models/user");
+const gravatar = require("gravatar");
+const Jimp = require("jimp");
 
-const usersControl = require("../../controllers/users");
 const { userRegisterSchema } = require("../../schemas/joi-users");
 const { HttpError } = require("../../helpers");
 const { TOKEN } = process.env;
-const { authenticate } = require("../../middlewares");
+const { authenticate, upload } = require("../../middlewares");
+const avatarsDir = path.resolve("public", "avatars");
 
 const router = express.Router();
 
@@ -25,9 +29,16 @@ router.post("/register", async (req, res, next) => {
     }
 
     const hashPassword = await bcryptjs.hash(password, 10);
-    const newUser = await usersControl.register({
+    const avatar = gravatar.url(email, {
+      protocol: "https",
+      s: "100",
+      r: "x",
+      d: "retro",
+    });
+    const newUser = await User.create({
       ...req.body,
       password: hashPassword,
+      avatarURL: avatar,
     });
     res.status(201).json({
       email: newUser.email,
@@ -81,7 +92,6 @@ router.patch("/", authenticate, async (req, res, next) => {
   try {
     const id = req.user._id;
     const result = await User.findByIdAndUpdate(id, req.body, { new: true });
-    console.log("🚀 ~ file: auth.js:85 ~ router.patch ~ result:", result);
     if (!result) {
       throw HttpError(400, "Wrong sub");
     }
@@ -90,5 +100,34 @@ router.patch("/", authenticate, async (req, res, next) => {
     next(error);
   }
 });
+
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  async (req, res, next) => {
+    try {
+      console.log(req.file);
+      const id = req.user._id;
+      const { path: oldPath, filename } = req.file;
+      const newPath = path.join(avatarsDir, filename);
+      const image = await Jimp.read(oldPath);
+      image.resize(250, 250).write(newPath);
+      fs.rename(oldPath, newPath);
+      const avatar = path.join("avatars", filename);
+      const result = await User.findByIdAndUpdate(
+        id,
+        { avatarURL: avatar },
+        { new: true }
+      );
+      if (!result) {
+        throw HttpError(400);
+      }
+      res.json({ avatarURL: result.avatarURL });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;
