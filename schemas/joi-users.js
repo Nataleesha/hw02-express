@@ -14,6 +14,14 @@ const userRegisterSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
+const userEmailVerifySchema = Joi.object({
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: { allow: ["com", "net"] },
+  }),
+});
+
 module.exports = {
   userRegisterSchema,
+  userEmailVerifySchema,
 };
