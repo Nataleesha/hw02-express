@@ -15,10 +15,16 @@ const userRegisterSchema = Joi.object({
 });
 
 const userEmailVerifySchema = Joi.object({
-  email: Joi.string().email({
-    minDomainSegments: 2,
-    tlds: { allow: ["com", "net"] },
-  }),
+  email: Joi.string()
+    .email({
+      minDomainSegments: 2,
+      tlds: { allow: ["com", "net"] },
+    })
+    .messages({
+      "string.empty": `"email" cannot be an empty field`,
+      "any.required": `"email" is a required field`,
+    })
+    .required(),
 });
 
 module.exports = {
