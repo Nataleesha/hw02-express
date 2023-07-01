@@ -6,18 +6,15 @@ const bcryptjs = require("bcryptjs");
 const User = require("../../models/user");
 const gravatar = require("gravatar");
 const Jimp = require("jimp");
-const sgMail = require("@sendgrid/mail");
 const { nanoid } = require("nanoid");
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-const { sendEmail } = require("../../services");
+const { sendVerificationEmail } = require("../../services");
 const {
   userRegisterSchema,
   userEmailVerifySchema,
 } = require("../../schemas/joi-users");
 const { HttpError } = require("../../helpers");
-const { TOKEN, BASE_URL } = process.env;
+const { TOKEN } = process.env;
 const { authenticate, upload } = require("../../middlewares");
 const avatarsDir = path.resolve("public", "avatars");
 
@@ -53,12 +50,7 @@ router.post("/register", async (req, res, next) => {
     });
 
     try {
-      await sendEmail(
-        email,
-        "v.paritskiy@code-on.be",
-        "Verify email",
-        `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click to verify email</a>`
-      );
+      await sendVerificationEmail(user);
     } catch (err) {
       next(err);
     }
@@ -138,12 +130,7 @@ router.post("/verify", async (req, res, next) => {
     }
 
     try {
-      await sendEmail(
-        email,
-        "v.paritskiy@code-on.be",
-        "Verify email",
-        `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click to verify email</a>`
-      );
+      await sendVerificationEmail(user);
     } catch (err) {
       next(err);
     }
