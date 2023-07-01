@@ -11,6 +11,7 @@ const { nanoid } = require("nanoid");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const { sendEmail } = require("../../services");
 const {
   userRegisterSchema,
   userEmailVerifySchema,
@@ -51,16 +52,13 @@ router.post("/register", async (req, res, next) => {
       verificationToken,
     });
 
-    const msg = {
-      to: email,
-      from: "v.paritskiy@code-on.be",
-      subject: "Verify email",
-      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click to verify email</a>`,
-    };
-
     try {
-      await sgMail.send(msg);
-      res.render("Email sent");
+      await sendEmail(
+        email,
+        "v.paritskiy@code-on.be",
+        "Verify email",
+        `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click to verify email</a>`
+      );
     } catch (err) {
       next(err);
     }
@@ -139,16 +137,13 @@ router.post("/verify", async (req, res, next) => {
       throw HttpError(400, "Verification has already been passed");
     }
 
-    const msg = {
-      to: email,
-      from: "v.paritskiy@code-on.be",
-      subject: "Verify email",
-      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click to verify email</a>`,
-    };
-
     try {
-      await sgMail.send(msg);
-      res.render("Email sent");
+      await sendEmail(
+        email,
+        "v.paritskiy@code-on.be",
+        "Verify email",
+        `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click to verify email</a>`
+      );
     } catch (err) {
       next(err);
     }
